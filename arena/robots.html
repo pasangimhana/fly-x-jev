@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fly × Jev · Robot studies</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+  </script>
+  <style>
+    :root { --bg: #f4f4f2; --ink: #1c1c1c; --dim: #85847f; --faint: #c4c3be; --line: rgba(28,28,28,0.08); --accent: #E55B2B; --sans: "Geist", ui-sans-serif, system-ui, sans-serif; --mono: "Geist Mono", ui-monospace, monospace; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; overflow: hidden; }
+    button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+    body { display: grid; grid-template-rows: auto 1fr; height: 100vh; padding: 26px 32px 28px; gap: 22px; }
+    header { display: grid; grid-template-columns: 1fr auto; align-items: end; }
+    .mark { font-size: 19px; font-weight: 500; letter-spacing: -0.01em; }
+    .mark span { color: var(--faint); font-weight: 300; margin: 0 4px; }
+    .sub { margin-top: 5px; font-size: 13px; color: var(--dim); }
+    .seg { display: flex; padding: 4px; gap: 2px; background: #fff; border: 1px solid var(--line); border-radius: 999px; }
+    .seg button { height: 30px; padding: 0 16px; border-radius: 999px; font-size: 12.5px; color: var(--dim); transition: background .2s, color .2s; }
+    .seg button:hover { color: var(--ink); }
+    .seg button.on { background: var(--ink); color: #fff; }
+    main { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 14px; min-height: 0; }
+    .cell { position: relative; border-radius: 16px; overflow: hidden; background: var(--bg); border: 1px solid var(--line); }
+    .cell canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 20px; bottom: 16px; display: flex; gap: 14px; align-items: baseline; pointer-events: none; }
+    .num { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+    .name { font-size: 17px; font-weight: 500; letter-spacing: -0.01em; }
+    .desc { display: block; margin-top: 3px; font-size: 12px; color: var(--dim); }
+    .move { position: absolute; right: 18px; top: 16px; display: flex; align-items: center; gap: 10px; font-size: 12px; pointer-events: none; }
+    .move b { font-weight: 500; }
+    .move i { font-style: normal; font-family: var(--mono); font-size: 10.5px; color: var(--accent); }
+    .move::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="mark">Fly <span>×</span> Jev <span>/</span> Robot studies</div>
+      <div class="sub">Four bodies for the same brain. Same motor commands: walk, steer, feed, fly.</div>
+    </div>
+    <nav class="seg">
+      <button data-mode="loop" class="on">Loop</button>
+      <button data-mode="walk">Walk</button>
+      <button data-mode="steer">Steer</button>
+      <button data-mode="feed">Feed</button>
+      <button data-mode="fly">Fly</button>
+    </nav>
+  </header>
+  <main>
+    <article class="cell" data-bot="Strider"><canvas></canvas><div class="move"><b>walk</b><i>DNp09</i></div>
+      <div class="cap"><span class="num">01</span><div><span class="name">Strider</span><span class="desc">Hexapod mech · lidar visor, hydraulic legs, four lift jets</span></div></div></article>
+    <article class="cell" data-bot="Hover"><canvas></canvas><div class="move"><b>walk</b><i>DNp09</i></div>
+      <div class="cap"><span class="num">02</span><div><span class="name">Hover</span><span class="desc">Drone-bug · one eye, four ducted rotors, spider legs that tuck</span></div></div></article>
+    <article class="cell" data-bot="Scarab"><canvas></canvas><div class="move"><b>walk</b><i>DNp09</i></div>
+      <div class="cap"><span class="num">03</span><div><span class="name">Scarab</span><span class="desc">Armoured beetle · shell splits open for wings and twin thrusters</span></div></div></article>
+    <article class="cell" data-bot="Orb"><canvas></canvas><div class="move"><b>walk</b><i>DNp09</i></div>
+      <div class="cap"><span class="num">04</span><div><span class="name">Orb</span><span class="desc">Sphere on stilts · high-knee legs fold away, ring thruster</span></div></div></article>
+  </main>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+    import { BOTS, ACCENT } from './js/robots.js';
+
+    const BG = '#f4f4f2';
+    const DN = { walk: 'DNp09', steer: 'DNa02', feed: 'Fdg', fly: 'DNp01' };
+    const SEQ = [['walk', 3.8], ['steer', 4.4], ['feed', 3.6], ['fly', 5.0]];
+    const FRAME = { Strider: 1.0, Hover: 1.0, Scarab: 0.85, Orb: 1.3 };
+    let mode = 'loop', clock = 0;
+
+    const honeyMat = new THREE.MeshPhysicalMaterial({ color: 0xf2b640, roughness: 0.04, transmission: 0.75, thickness: 0.1, ior: 1.5, clearcoat: 1, attenuationColor: new THREE.Color('#b86a08'), attenuationDistance: 0.15 });
+
+    function floorMaterial() {
+      return new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false,
+        uniforms: { uOff: { value: new THREE.Vector2() } },
+        vertexShader: 'varying vec2 vW; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vW = w.xz; gl_Position = projectionMatrix * viewMatrix * w; }',
+        fragmentShader: `uniform vec2 uOff; varying vec2 vW;
+          float aa(float d, float w){ return 1.0 - smoothstep(-w, w, d); }
+          void main(){
+            vec2 p = vW + uOff;
+            vec2 g = abs(fract(p / 0.2 + 0.5) - 0.5) * 0.2;
+            float dotm = aa(length(g) - 0.0045, fwidth(length(g)) + 1e-4);
+            vec2 L = abs(fract(p + 0.5) - 0.5);
+            vec2 fw = fwidth(p);
+            float line = max(aa(L.x - 0.0009, fw.x), aa(L.y - 0.0009, fw.y));
+            float a = max(dotm * 0.22, line * 0.12);
+            float fade = 1.0 - smoothstep(1.2, 2.6, length(vW));
+            gl_FragColor = vec4(vec3(0.11), a * fade);
+          }`,
+      });
+    }
+
+    function makeCell(el) {
+      const canvas = el.querySelector('canvas');
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+      renderer.toneMapping = THREE.NeutralToneMapping;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(BG);
+      scene.fog = new THREE.Fog(BG, 3.2, 7);
+      scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+      scene.environmentIntensity = 0.8;
+      scene.add(new THREE.HemisphereLight(0xffffff, 0xe4e1da, 1.4));
+      const key = new THREE.DirectionalLight(0xffffff, 2.3);
+      key.position.set(1.4, 3.2, 1.3);
+      key.castShadow = true;
+      key.shadow.mapSize.set(1024, 1024);
+      Object.assign(key.shadow.camera, { left: -1.6, right: 1.6, top: 1.6, bottom: -1.6, near: 0.1, far: 8 });
+      key.shadow.bias = -0.0004; key.shadow.normalBias = 0.01;
+      scene.add(key);
+      const shadowFloor = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), new THREE.ShadowMaterial({ opacity: 0.14 }));
+      shadowFloor.rotation.x = -Math.PI / 2; shadowFloor.receiveShadow = true; scene.add(shadowFloor);
+      const fm = floorMaterial();
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), fm);
+      floor.rotation.x = -Math.PI / 2; floor.position.y = 0.001; scene.add(floor);
+
+      const bot = new BOTS[el.dataset.bot]();
+      bot.root.traverse((o) => { if (o.isMesh) { o.castShadow = true; } });
+      scene.add(bot.root);
+      const k = FRAME[el.dataset.bot];
+      const camera = new THREE.PerspectiveCamera(30, 1, 0.02, 30);
+
+      const rings = [];
+      const ringGeo = new THREE.RingGeometry(0.95, 1, 80);
+      const ring = (r0, r1, dur, op) => {
+        const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0x1c1c1c, transparent: true, opacity: op, depthWrite: false }));
+        m.rotation.x = -Math.PI / 2; m.position.y = 0.002; scene.add(m); rings.push({ m, t: 0, r0, r1, dur, op });
+      };
+
+      const S = { v: 0, w: 0, feed: 0, flight: 0, boost: 0, alt: 0, hover: 0, act: 0, heading: 0, off: new THREE.Vector2(), honey: null, wasFeeding: false, wasAir: false, wash: 0 };
+      const moveEl = el.querySelector('.move b'), dnEl = el.querySelector('.move i');
+
+      function resize() {
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        if (!w || !h) return;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h; camera.updateProjectionMatrix();
+      }
+      addEventListener('resize', resize); resize();
+
+      return {
+        update(dt, phase, tau, dur) {
+          moveEl.textContent = phase; dnEl.textContent = DN[phase];
+          // targets for this phase
+          let vt = 0, wt = 0, ft = 0, flight = 0, boost = 0, alt = 0, hover = 0;
+          if (phase === 'walk') vt = bot.vmax;
+          if (phase === 'steer') { vt = bot.vmax * 0.75; wt = 1.35 * Math.sin((tau / dur) * Math.PI * 2); }
+          if (phase === 'feed') ft = tau > 0.45 && tau < dur - 0.45 ? 1 : 0;
+          if (phase === 'fly') {
+            const up = 0.9, down = dur - 1.3;
+            boost = tau < 0.25 ? tau / 0.25 : tau < up ? 1 : tau < down ? 0.55 : tau < dur - 0.25 ? 0.85 : Math.max(0, (dur - tau) / 0.25);
+            const rise = THREE.MathUtils.smoothstep(tau, 0.3, up + 0.4), fall = THREE.MathUtils.smoothstep(tau, down, dur - 0.3);
+            alt = 0.46 * rise * (1 - fall) + 0.03 * Math.sin(tau * 2.4) * rise * (1 - fall);
+            hover = rise * (1 - fall);
+            flight = tau < 1.0 ? Math.min(1, tau / 0.5) : Math.min(1, alt / 0.16);   // legs fold on takeoff, reach for the ground on landing
+          }
+          const kk = 1 - Math.exp(-dt * 3.2);
+          S.v += (vt - S.v) * kk; S.w += (wt - S.w) * kk; S.feed += (ft - S.feed) * (1 - Math.exp(-dt * 4));
+          Object.assign(S, { flight, boost, alt, hover });
+          S.act = Math.min(1, Math.abs(S.v) / bot.vmax + Math.abs(S.w) * 0.3);
+
+          // treadmill: the robot stays put, the ground and the food move under it
+          S.heading += S.w * dt;
+          const dx = Math.sin(S.heading) * S.v * dt, dz = Math.cos(S.heading) * S.v * dt;
+          S.off.x += dx; S.off.y += dz;
+          fm.uniforms.uOff.value.copy(S.off);
+          bot.root.rotation.y = S.heading;
+          bot.update(dt, S);
+
+          // honey appears under the feeder, shrinks while eaten, then slides away
+          const feeding = S.feed > 0.5;
+          if (feeding && !S.wasFeeding && !S.honey) {
+            const m = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), honeyMat);
+            const mp = bot.mouth.applyAxisAngle(new THREE.Vector3(0, 1, 0), S.heading);
+            m.position.set(mp.x, 0, mp.z); m.castShadow = true; scene.add(m);
+            S.honey = { m, amt: 1, t: 0 };
+          }
+          S.wasFeeding = feeding;
+          if (S.honey) {
+            const h = S.honey; h.t += dt;
+            if (S.feed > 0.3) h.amt = Math.max(0.35, h.amt - dt * 0.12);
+            const grow = Math.min(1, h.t * 5), sc = 0.075 * Math.cbrt(h.amt) * grow;
+            h.m.scale.set(sc * 1.3, sc * 0.55, sc * 1.3);
+            h.m.position.x -= dx; h.m.position.z -= dz;
+            if (h.m.position.length() > 3) { scene.remove(h.m); h.m.geometry.dispose(); S.honey = null; }
+          }
+          // takeoff / landing rings and downwash
+          const air = S.alt > 0.02;
+          if (air !== S.wasAir) ring(0.08, 0.55, 0.8, 0.28);
+          S.wasAir = air;
+          S.wash -= dt;
+          if (S.boost > 0.3 && S.alt < 0.6 && S.wash <= 0) { S.wash = 0.28; ring(0.06, 0.3 + S.alt * 0.5, 0.6, 0.12 * S.boost); }
+          for (let i = rings.length - 1; i >= 0; i--) {
+            const r = rings[i]; r.t += dt / r.dur;
+            const e = 1 - Math.pow(1 - Math.min(1, r.t), 3);
+            r.m.scale.setScalar(r.r0 + (r.r1 - r.r0) * e); r.m.material.opacity = r.op * (1 - Math.min(1, r.t));
+            if (r.t >= 1) { scene.remove(r.m); r.m.material.dispose(); rings.splice(i, 1); }
+          }
+
+          // camera: 3/4 front, gentle drift, lifts with the robot
+          const orbit = 0.62 + Math.sin(clock * 0.15) * 0.18;
+          const d = 2.05 * k;
+          camera.position.set(Math.sin(orbit) * d, 0.95 * k + S.alt * 0.5, Math.cos(orbit) * d);
+          camera.lookAt(0, 0.2 * k + S.alt * 0.7, 0);
+          renderer.render(scene, camera);
+        },
+      };
+    }
+
+    const cells = [...document.querySelectorAll('.cell')].map(makeCell);
+    document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
+      mode = b.dataset.mode; clock = 0;
+      document.querySelectorAll('.seg button').forEach((x) => x.classList.toggle('on', x === b));
+    }));
+
+    function phaseAt(t) {
+      if (mode !== 'loop') { const dur = SEQ.find(([n]) => n === mode)[1]; return [mode, t % dur, dur]; }
+      const total = SEQ.reduce((a, [, d]) => a + d, 0);
+      let x = t % total;
+      for (const [n, d] of SEQ) { if (x < d) return [n, x, d]; x -= d; }
+      return ['walk', 0, SEQ[0][1]];
+    }
+
+    let last = performance.now();
+    function frame(now) {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now; clock += dt;
+      const [phase, tau, dur] = phaseAt(clock);
+      for (const c of cells) c.update(dt, phase, tau, dur);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame((t) => { last = t; frame(t); });
+    window.robots = { cells, setMode: (m) => document.querySelector(`.seg [data-mode=${m}]`).click() };
+  </script>
+</body>
+</html>

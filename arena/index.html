@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fly × Jev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+  </script>
+</head>
+<body>
+  <canvas id="world"></canvas>
+  <div id="world-labels"></div>
+
+  <header id="top"><h1>Fly <em>×</em> Jev</h1></header>
+
+  <div id="caption"></div>
+
+  <!-- one readout card: what Jev decides, and what the fly remembers -->
+  <aside id="readout" class="card">
+    <section class="sec">
+      <div class="kicker">Jev decides</div>
+      <div class="now">
+        <div id="now-action">Waiting</div>
+        <div id="now-dn">—</div>
+      </div>
+      <div id="bars"></div>
+      <div class="meta">
+        <span><b id="m-lat">—</b> ms</span>
+        <span><b id="m-count">0</b> decisions</span>
+        <span><b id="m-cost">$0.000</b> spent</span>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="kicker">Memory</div>
+      <div class="val" id="val-A">
+        <div class="row"><span class="name"><i class="ico toxic"></i>Toxic smell</span><span class="txt">neutral</span></div>
+        <div class="track"><b class="mid"></b><b class="knob"></b></div>
+      </div>
+      <div class="val" id="val-B">
+        <div class="row"><span class="name"><i class="ico honey"></i>Honey smell</span><span class="txt">neutral</span></div>
+        <div class="track"><b class="mid"></b><b class="knob"></b></div>
+      </div>
+      <div class="row motor"><span class="name"><i class="ico barrier"><b></b><b></b><b></b></i>Vision → action</span><span id="motor-txt">innate</span></div>
+      <div class="stats">
+        <div><b id="st-reward">0%</b><span>reward</span></div>
+        <div><b id="st-pain">0%</b><span>pain</span></div>
+        <div><b id="st-fed">0%</b><span>fed</span></div>
+        <div><b id="st-dist">0</b><span>body lengths</span></div>
+      </div>
+    </section>
+  </aside>
+
+  <!-- what the real eye columns see, and the LC/LPLC readout Jev gets -->
+  <aside id="eye-card">
+    <div class="eye-head"><span class="kicker">Compound eye</span><span id="eye-n">—</span></div>
+    <canvas id="eye-canvas"></canvas>
+    <div class="eye-read">
+      <span class="lbl">LC/LPLC → Jev</span>
+      <div id="eye-bins"></div>
+    </div>
+    <div class="eye-foot"><span>left</span><span>ahead</span><span>right</span></div>
+  </aside>
+
+  <!-- every control in one dock -->
+  <div id="arm-hint">Click the road to drop <b id="arm-what">honey</b> · <kbd>Esc</kbd> to cancel</div>
+  <nav id="dock">
+    <div class="group">
+      <button data-cmd="play" class="dbtn play"><svg viewBox="0 0 16 16"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg><span>Play</span></button>
+      <button data-cmd="demo" class="dbtn">Demo</button>
+      <button data-cmd="reset" class="dbtn">Reset</button>
+    </div>
+    <span class="sep"></span>
+    <div class="group">
+      <span class="glabel">Obstacles</span>
+      <button data-tool="honey" class="dbtn tool"><i class="ico honey"></i>Honey<kbd>1</kbd></button>
+      <button data-tool="toxic" class="dbtn tool"><i class="ico toxic"></i>Toxic waste<kbd>2</kbd></button>
+      <button data-tool="barrier" class="dbtn tool"><i class="ico barrier"><b></b><b></b><b></b></i>Barrier<kbd>3</kbd></button>
+    </div>
+    <span class="sep"></span>
+    <div class="group">
+      <button data-cmd="brain" class="dbtn">Brain<kbd>B</kbd></button>
+    </div>
+  </nav>
+
+  <section id="brain-pop" class="card">
+    <header>
+      <div><div class="kicker">Connectome</div><div class="t">MaleCNS v1.0 · <span id="neuron-count">—</span> neurons</div></div>
+      <button id="pop-close" aria-label="close">×</button>
+    </header>
+    <div class="pop-canvas"><canvas id="brain-canvas"></canvas><div id="brain-labels"></div></div>
+    <div id="brain-event"></div>
+  </section>
+
+  <div id="loader"><h1>Fly <em>×</em> Jev</h1><div class="ld">loading connectome</div></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

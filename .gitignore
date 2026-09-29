@@ -1,0 +1,18 @@
+# secrets
+.env
+
+# python
+__pycache__/
+*.pyc
+
+# os / tooling
+.DS_Store
+.opencode/
+node_modules/
+
+# local-only material
+content/
+research-notes.md
+
+# MaleCNS input data (download separately, see arena/DATA.md)
+male-cns-data/

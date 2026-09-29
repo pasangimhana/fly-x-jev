@@ -1,0 +1,86 @@
+{
+ "count": 141208,
+ "superclasses": [
+  "ENS",
+  "ascending_neuron",
+  "cb_efferent",
+  "cb_endocrine",
+  "cb_intrinsic",
+  "cb_motor",
+  "descending_neuron",
+  "efferent_ascending",
+  "efferent_descending",
+  "ol_intrinsic",
+  "ol_sensory",
+  "unclassified",
+  "visual_centrifugal",
+  "visual_projection",
+  "visual_projection_tbc",
+  "vnc_efferent",
+  "vnc_endocrine",
+  "vnc_intrinsic",
+  "vnc_motor",
+  "vnc_sensory",
+  "vnc_tbc"
+ ],
+ "superclass_counts": {
+  "ENS": 1,
+  "ascending_neuron": 1839,
+  "cb_efferent": 4,
+  "cb_endocrine": 68,
+  "cb_intrinsic": 32074,
+  "cb_motor": 103,
+  "descending_neuron": 1308,
+  "efferent_ascending": 8,
+  "efferent_descending": 4,
+  "ol_intrinsic": 81684,
+  "ol_sensory": 28,
+  "unclassified": 572,
+  "visual_centrifugal": 563,
+  "visual_projection": 9179,
+  "visual_projection_tbc": 2,
+  "vnc_efferent": 91,
+  "vnc_endocrine": 22,
+  "vnc_intrinsic": 12951,
+  "vnc_motor": 704,
+  "vnc_sensory": 2,
+  "vnc_tbc": 1
+ },
+ "bounds": {
+  "min": [
+   -0.72589,
+   -1.5384,
+   -0.58824
+  ],
+  "max": [
+   0.74029,
+   0.4616,
+   0.44448
+  ]
+ },
+ "bbox_center": [
+  0.0072,
+  -0.5384,
+  -0.07188
+ ],
+ "units_note": "Soma positions from MaleCNS v1.0 (8 nm voxels), centered on the centroid of all 141,208 positioned Traced/Anchor neurons and scaled so the largest extent spans 2.0 units (1 unit ~= 498 um). Axes: +x = fly's right, +y = anterior (brain up, VNC hangs down along -y), +z = dorsal. The dataset's VNC lies posterior to the brain, so 'brain on top' makes anterior point up; a default camera on +z sees a dorsal view.",
+ "transform": {
+  "centroid_voxels": [
+   48516.01,
+   32405.95,
+   38866.64
+  ],
+  "scale_per_voxel": 1.6076524255455972e-05,
+  "three_from_voxel": "x=-(vx-cx)*s, y=-(vz-cz)*s, z=-(vy-cy)*s"
+ },
+ "orientation_checks": {
+  "vnc_mean_y": -1.0034,
+  "brain_mean_y": 0.1231,
+  "ol_left_mean_x": -0.5076,
+  "ol_right_mean_x": 0.5106
+ },
+ "files": {
+  "positions": "brain_positions.f32 (float32 LE, N*3)",
+  "superclass": "brain_superclass.u8 (uint8, N)"
+ }
+}
